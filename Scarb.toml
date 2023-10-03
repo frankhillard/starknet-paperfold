@@ -1,0 +1,25 @@
+[package]
+name = "paperfold"
+version = "0.1.0"
+authors = ["Frank Hillard <frank.hillard@gmail.com>"]
+description = "Folding paper emulator"
+readme = "README.md"
+license = "MIT"
+keywords = ["starknet"]
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
+
+[dependencies]
+starknet = ">=2.2.0"
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.6.0" }
+# serde = { version = "1.0", features = ["derive"] }
+
+[cairo]
+sierra-replace-ids = true
+
+[[target.starknet-contract]]
+casm = true
+# build-external-contracts = ["openzeppelin::account::account::Account"]
+
+[scripts]
+test = "snforge factory_anchor"
