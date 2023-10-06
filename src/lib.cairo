@@ -117,4 +117,43 @@ mod lib_grid_tests {
         assert_eq(result.get(1_u32, 1_u32), @('B'.into()) , 'Wrong cell 5 init value');
         assert_eq(result.get(2_u32, 1_u32), @('C'.into()) , 'Wrong cell 6 init value');
     }
+
+    #[test]
+    #[available_gas(10000000)]
+    fn success_fold_column_1() {
+        let length: u32 = 4;
+        let width: u32 = 3;
+        let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
+        let mut result = grid.fold_columns_left(1_u32);
+
+
+        assert_eq(result.get(0_u32, 0_u32), @('AB'.into()) , 'Wrong cell 0 init value');
+        assert_eq(result.get(1_u32, 0_u32), @('C'.into()) , 'Wrong cell 1 init value');
+        assert_eq(result.get(2_u32, 0_u32), @('D'.into()) , 'Wrong cell 2 init value');
+        assert_eq(result.get(0_u32, 1_u32), @('EF'.into()) , 'Wrong cell 4 init value');
+        assert_eq(result.get(1_u32, 1_u32), @('G'.into()) , 'Wrong cell 5 init value');
+        assert_eq(result.get(2_u32, 1_u32), @('H'.into()) , 'Wrong cell 6 init value');
+        assert_eq(result.get(0_u32, 2_u32), @('IJ'.into()) , 'Wrong cell 7 init value');
+        assert_eq(result.get(1_u32, 2_u32), @('K'.into()) , 'Wrong cell 8 init value');
+        assert_eq(result.get(2_u32, 2_u32), @('L'.into()) , 'Wrong cell 9 init value');
+
+
+        // assert_eq(result.get(0_u32, 0_u32), @('A'.into()) , 'Wrong cell 0 init value');
+        // assert_eq(result.get(1_u32, 0_u32), @('E'.into()) , 'Wrong cell 1 init value');
+        // assert_eq(result.get(2_u32, 0_u32), @('I'.into()) , 'Wrong cell 2 init value');
+
+        // assert_eq(result.get(0_u32, 1_u32), @('B'.into()) , 'Wrong cell 4 init value');
+        // assert_eq(result.get(1_u32, 1_u32), @('F'.into()) , 'Wrong cell 5 init value');
+        // assert_eq(result.get(2_u32, 1_u32), @('J'.into()) , 'Wrong cell 6 init value');
+        
+        // assert_eq(result.get(0_u32, 2_u32), @('C'.into()) , 'Wrong cell 8 init value');
+        // assert_eq(result.get(1_u32, 2_u32), @('G'.into()) , 'Wrong cell 9 init value');
+        // assert_eq(result.get(2_u32, 2_u32), @('K'.into()) , 'Wrong cell 10 init value');
+    
+        // assert_eq(result.get(0_u32, 3_u32), @('D'.into()) , 'Wrong cell 8 init value');
+        // assert_eq(result.get(1_u32, 3_u32), @('H'.into()) , 'Wrong cell 9 init value');
+        // assert_eq(result.get(2_u32, 3_u32), @('L'.into()) , 'Wrong cell 11 init value');
+    }
+
+
 }

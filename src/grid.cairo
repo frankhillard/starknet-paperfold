@@ -19,6 +19,7 @@ trait GridTrait<T> {
     fn pop_line(ref self: T) -> (Span<felt252>, Grid);
     fn pop_lines(ref self: T, nb: u32) -> (Grid, Grid);
     fn fold_lines_up(ref self: T, index: u32) -> Grid;
+    fn fold_columns_left(ref self: T, index: u32) -> Grid;
 }
 
 fn copy_grid(grid: Span<felt252>, mut result: Array<felt252>, index: u32, stop: u32) -> Array<felt252> {
@@ -180,6 +181,26 @@ fn max(lhs: u32, rhs: u32) -> u32 {
     }
 }
 
+fn copy_column_rec(grid: Span<felt252>, mut column: Array<felt252>, index: u32, index_line: u32, width:u32, length:u32) -> Array<felt252> {
+    if (index > width - 1){
+        column
+    } else {
+        // let tt = index_line + index * length;
+        // tt.print();
+        column.append(grid.at(index_line + index * length).clone());
+        copy_column_rec(grid, column, index + 1, index_line, width, length)
+    }
+}
+
+fn transpose(grid: Span<felt252>, mut result: Array<felt252>, index: u32, length:u32, width:u32) -> Array<felt252> {
+    if (index > length - 1){
+        result
+    } else {
+        let col = copy_column_rec(grid, result, 0, index, width, length);
+        transpose(grid, col, index + 1, length, width)
+    }
+}
+
 // impl TCopyClone<T, impl TCopy: Copy<T>> of Clone<Array<felt252>> {
 //     fn clone(self: @Array<felt252>) -> Array<felt252> {
 //         let mut res: Array<felt252> = ArrayTrait::new();
@@ -269,5 +290,23 @@ impl GridTraitGridImpl of GridTrait<Grid> {
         }
     }
 
+    fn fold_columns_left(ref self: Grid, index: u32) -> Grid {
+        let transposed = transpose(self.grid.span(), ArrayTrait::new(), 0, self.length, self.width);
+
+        let mut transposed_grid = Grid {
+            length: self.width,
+            width: self.length,
+            grid: transposed
+        };
+        // transposed_grid
+        let folded_transposed_grid = transposed_grid.fold_lines_up(index);
+        let final = transpose(folded_transposed_grid.grid.span(), ArrayTrait::new(), 0, folded_transposed_grid.length, folded_transposed_grid.width);
+        Grid {
+            length: folded_transposed_grid.width,
+            width: folded_transposed_grid.length,
+            grid: final
+        }
+        
+    }
 
 }

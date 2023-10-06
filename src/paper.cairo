@@ -1,6 +1,7 @@
 use array::ArrayTrait;
 // use starknet::ContractAddress;
 use paperfold::direction::Direction;
+// use paperfold::grid::Grid;
 
 #[starknet::interface]
 trait PaperTrait<T> {
@@ -10,7 +11,7 @@ trait PaperTrait<T> {
     fn reset(ref self: T);
     /// @dev Function that retrieves the paper
     fn get_paper(self: @T) -> Array::<felt252>;
-    // fn get_paper_grid(self: @T) -> Array::<Array::<felt252>>;
+    // fn get_paper_grid(self: @T) -> Grid;
 }
 
 #[starknet::contract]
@@ -18,8 +19,9 @@ mod Paper {
     // use starknet::get_caller_address;
     // use starknet::get_block_timestamp;
     // use starknet::ContractAddress;
-    use core::result::ResultTrait;
-use core::traits::Into;
+    use core::traits::TryInto;
+use core::result::ResultTrait;
+    use core::traits::Into;
     use core::clone::Clone;
     use array::ArrayTrait;
     use paperfold::grid::{Grid, GridTrait};
@@ -42,7 +44,6 @@ use core::traits::Into;
         self.construct_paper(0_u8, total_elements, start_symbol);
     }
 
-
     #[external(v0)]
     impl PaperImpl of super::PaperTrait<ContractState> {
         fn fold(ref self: ContractState, direction: super::Direction, index: u8) {
@@ -57,14 +58,14 @@ use core::traits::Into;
             match direction {
                 super::Direction::Up(_) => {
                     let new_grid = grid.fold_lines_up(index.into());
-                    self.write_grid_to_storage(new_grid.grid.span(), 0_u8, total_elements - self.length.read());
+                    let new_w: u8 = new_grid.width.try_into().unwrap();
+                    let new_l: u8 = new_grid.length.try_into().unwrap();
+                    self.write_grid_to_storage(new_grid.grid.span(), 0_u8, new_l * new_w);
                 },
                 super::Direction::Down(_) => {},
                 super::Direction::Left(_) => {},
                 super::Direction::Right(_) => {},
             }
-
-
 
             // WHY RESULT IS NOT ALLOWED ??
             // let grid_result: Result<Grid, felt252> = GridTrait::<Grid>::try_from(data, width, length);
@@ -84,6 +85,7 @@ use core::traits::Into;
             //     }
             // }
         }
+
         fn reset(ref self: ContractState) {
             let total_elements = self.length.read() * self.width.read();
             let start_symbol: felt252 = 'A'.into();
@@ -103,10 +105,13 @@ use core::traits::Into;
 
         // fn get_paper_grid(self: @ContractState) -> paperfold::grid::Grid {
         //     let total_elements = self.length.read() * self.width.read();
-        //     let grid: paperfold::grid::Grid = paperfold::grid::GridTraitGridImpl::new(self.length.read().into(), self.width.read().into());
-        //     let mut values: Array::<Array::<felt252>> = ArrayTrait::new();
-        //     self.build_n_columns(values, 0, self.length.read())
-        //     self.fill_grid(values, 0, total_elements)
+        //     let mut values = ArrayTrait::new();
+        //     let arr: Array<felt252> = self.copy_paper_array(values, 0_u8, total_elements);
+        //     let length: u32 = self.length.read().into();
+        //     let width: u32 = self.width.read().into();
+        //     let data: Span<felt252> = arr.span();
+        //     let grid: Grid = GridTrait::<Grid>::from(data, width, length);
+        //     grid
         // }
 
     }
@@ -147,58 +152,6 @@ use core::traits::Into;
             }
         }
 
-        // fn build_n_columns(
-        //     self: @ContractState, mut values: Array::<Array::<felt252>>, index: u8, nb: u8) -> Array::<Array::<felt252>> {
-        //     if index < nb {
-        //         let mut one_column = ArrayTrait::new();
-        //         values.append(one_column);
-        //         self.build_n_columns(values, index + 1, nb)
-        //     } else {
-        //         values
-        //     }
-        // }
-
-        // fn fill_grid(
-        //     ref self: ContractState, mut values: Array::<Array::<felt252>>, index: u8, nb: u8) -> Array::<Array::<felt252>> {
-        //     if index < nb {
-        //         let data = self.paper.read(index);
-        //         let column = index / self.width.read(); 
-        //         let line = index % self.width.read();
-        //         values.append(one_column);
-        //         self.build_n_columns(values, index + 1, nb)
-        //     } else {
-        //         values
-        //     }
-        // }
-
     }
-
-
-    fn reverse(str: @felt252) -> @felt252 {
-        let raw: felt252 = str.clone();
-        @raw
-    }
-
-    fn merge_cell_onto(mut res: Array::<felt252>, top: Array::<felt252>, bot: Array::<felt252>, index: u32, nb: u32) -> Array::<felt252> {
-        if (index < nb) {
-            let elt: @felt252 = top.at(index);
-            let rev_elt = reverse(elt);
-            let base: @felt252 = bot.at(index);
-            let merged = rev_elt.clone() + base.clone();
-            res.append(merged);
-            merge_cell_onto(res, top, bot, index + 1, nb)
-        } else {
-            res
-        }
-    }
-
-    fn merge_onto(top: Array::<felt252>, bot: Array::<felt252>) -> Array::<felt252> {
-        let size = top.len();
-        assert(bot.len() == size, 'columns size missmatch');
-        let mut result = ArrayTrait::new();
-        let final = merge_cell_onto(result, top, bot, 0, size);
-        final
-    }
-
 
 }
