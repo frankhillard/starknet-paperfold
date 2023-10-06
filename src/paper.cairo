@@ -1,34 +1,7 @@
 use array::ArrayTrait;
-use starknet::ContractAddress;
-
-#[derive(Drop)]
-enum Direction {
-    Up: (),
-    Down: (),
-    Left: (),
-    Right: ()
-}
-
-impl DirectionSerdeImpl of Serde<Direction> {
-    fn serialize(self: @Direction, ref output: Array<felt252>) {
-        match self {
-            Direction::Up(_) => { output.append(0.into()) },
-            Direction::Down(_) => { output.append(1.into()) },
-            Direction::Left(_) => { output.append(2.into()) },
-            Direction::Right(_) => { output.append(3.into()) },
-        }
-    }
-
-    fn deserialize(ref serialized: Span<felt252>) -> Option<Direction> {
-        let msg = *serialized.pop_front()?;
-        if (msg == 0) { Option::Some(Direction::Up(())) }
-        else if (msg == 1) { Option::Some(Direction::Down(())) }
-        else if (msg == 2) { Option::Some(Direction::Left(())) }
-        else if (msg == 3) { Option::Some(Direction::Right(())) }
-        else {Option::None(()) }
-    }
-}
-
+// use starknet::ContractAddress;
+use paperfold::direction::Direction;
+// use paperfold::grid::Grid;
 
 #[starknet::interface]
 trait PaperTrait<T> {
@@ -38,6 +11,7 @@ trait PaperTrait<T> {
     fn reset(ref self: T);
     /// @dev Function that retrieves the paper
     fn get_paper(self: @T) -> Array::<felt252>;
+    // fn get_paper_grid(self: @T) -> Grid;
 }
 
 #[starknet::contract]
@@ -45,7 +19,12 @@ mod Paper {
     // use starknet::get_caller_address;
     // use starknet::get_block_timestamp;
     // use starknet::ContractAddress;
+    use core::traits::TryInto;
+use core::result::ResultTrait;
+    use core::traits::Into;
+    use core::clone::Clone;
     use array::ArrayTrait;
+    use paperfold::grid::{Grid, GridTrait};
 
     // Storage variable used to store the anchored value
     #[storage]
@@ -65,20 +44,57 @@ mod Paper {
         self.construct_paper(0_u8, total_elements, start_symbol);
     }
 
-
     #[external(v0)]
     impl PaperImpl of super::PaperTrait<ContractState> {
         fn fold(ref self: ContractState, direction: super::Direction, index: u8) {
-            // match direction {
-            //     super::Direction::Up(_) => {
+            let total_elements = self.length.read() * self.width.read();
+            let mut values = ArrayTrait::new();
+            let arr: Array<felt252> = self.copy_paper_array(values, 0_u8, total_elements);
+            let length: u32 = self.length.read().into();
+            let width: u32 = self.width.read().into();
+            let data: Span<felt252> = arr.span();
+            
+            let mut grid: Grid = GridTrait::<Grid>::from(data, width, length);
+            match direction {
+                super::Direction::Up(_) => {
+                    let new_grid = grid.fold_lines_up(index.into());
+                    let new_w: u8 = new_grid.width.try_into().unwrap();
+                    let new_l: u8 = new_grid.length.try_into().unwrap();
+                    self.write_grid_to_storage(new_grid.grid.span(), 0_u8, new_l * new_w);
+                },
+                super::Direction::Down(_) => {},
+                super::Direction::Left(_) => {},
+                super::Direction::Right(_) => {},
+            }
 
+            // WHY RESULT IS NOT ALLOWED ??
+            // let grid_result: Result<Grid, felt252> = GridTrait::<Grid>::try_from(data, width, length);
+            // match grid_result {
+            //     Result::Ok(mut grid) => {
+            //         match direction {
+            //             super::Direction::Up(_) => {
+            //                 let new_grid = grid.fold_lines_up(index.into());
+            //                 self.write_grid_to_storage(new_grid.grid.span(), 0_u8, total_elements);
+            //             },
+            //             super::Direction::Down(_) => {},
+            //             super::Direction::Left(_) => {},
+            //             super::Direction::Right(_) => {},
+            //         }
             //     },
+            //     Result::Err(err) =>{
+            //     }
             // }
         }
+
         fn reset(ref self: ContractState) {
             let total_elements = self.length.read() * self.width.read();
             let start_symbol: felt252 = 'A'.into();
-            self.construct_paper(0_u8, total_elements, start_symbol);
+            // self.construct_paper(0_u8, total_elements, start_symbol);
+
+            let length: u32 = self.length.read().into();
+            let width: u32 = self.width.read().into();
+            let grid_result: Grid = GridTrait::<Grid>::new(width, length, start_symbol);
+            self.write_grid_to_storage(grid_result.grid.span(), 0_u8, total_elements);
         }
 
         fn get_paper(self: @ContractState) -> Array::<felt252> {
@@ -86,6 +102,18 @@ mod Paper {
             let mut values = ArrayTrait::new();
             self.copy_paper_array(values, 0_u8, total_elements)
         }
+
+        // fn get_paper_grid(self: @ContractState) -> paperfold::grid::Grid {
+        //     let total_elements = self.length.read() * self.width.read();
+        //     let mut values = ArrayTrait::new();
+        //     let arr: Array<felt252> = self.copy_paper_array(values, 0_u8, total_elements);
+        //     let length: u32 = self.length.read().into();
+        //     let width: u32 = self.width.read().into();
+        //     let data: Span<felt252> = arr.span();
+        //     let grid: Grid = GridTrait::<Grid>::from(data, width, length);
+        //     grid
+        // }
+
     }
 
     /// @dev Internal Functions implementation for the Paper contract
@@ -110,6 +138,15 @@ mod Paper {
             if index < last_index {
                 let cell = self.paper.write(index, symbol);
                 self.construct_paper(index + 1, last_index, symbol + 1)
+            } else {
+                return ();
+            }
+        }
+
+        fn write_grid_to_storage(ref self: ContractState, values: Span<felt252>, index: u8, last_index: u8)  {
+            if index < last_index {
+                self.paper.write(index, values.at(index.into()).clone());
+                self.write_grid_to_storage(values, index + 1, last_index);
             } else {
                 return ();
             }
