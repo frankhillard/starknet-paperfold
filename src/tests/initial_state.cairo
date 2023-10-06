@@ -18,8 +18,6 @@ mod tests {
     fn success_initial_state() {
         let length = 4;
         let width = 3;
-        // let admin: felt252 = 0x021b328153b45744778795f5c8edd9211da72fca894ef91ea389c479a31f1449;
-        // let class_hash = 0x2bcad2faa9adef1787dca061d108ab3e0eb4d4916fdc4642517c4102003b21c;
 
         // Prepare deployment parameters
         let mut calldata_array = ArrayTrait::new();
@@ -34,10 +32,6 @@ mod tests {
         let dispatcher = PaperTraitDispatcher { contract_address: contract_address };
 
         let mut grid = dispatcher.get_paper();
-        // let val: @felt252 = grid.at(0);
-        // let expected : felt252 = 'A'.into();
-        // assert_eq(val, @expected , 'Wrong cell init value');
-
         assert_eq(grid.at(0), @('A'.into()) , 'Wrong cell 1 init value');
         assert_eq(grid.at(1), @('B'.into()) , 'Wrong cell 1 init value');
         assert_eq(grid.at(2), @('C'.into()) , 'Wrong cell 2 init value');
@@ -54,7 +48,5 @@ mod tests {
         let actual_size: felt252 = grid.len().into();
         let expected_size = length * width;
         assert_eq(@actual_size, @expected_size , 'Wrong size');
-
-
     }
 }

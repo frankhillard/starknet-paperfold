@@ -22,4 +22,4 @@ casm = true
 # build-external-contracts = ["openzeppelin::account::account::Account"]
 
 [scripts]
-test = "snforge factory_anchor"
+test = "snforge"
