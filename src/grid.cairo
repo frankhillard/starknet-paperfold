@@ -11,13 +11,25 @@ struct Grid {
 }
 
 trait GridTrait<T> {
-    fn new(length: u32, width: u32) -> Grid;
+    fn new(length: u32, width: u32, start_symbol: felt252) -> Grid;
+    fn try_from(data: Span<felt252>, width: u32, length: u32) -> Result<Grid, felt252>;
+    fn from(data: Span<felt252>, width: u32, length: u32) -> Grid;
     fn get(ref self: T, x: u32, y: u32) -> @felt252;
     fn len(self: @T) -> u32;
     fn pop_line(ref self: T) -> (Span<felt252>, Grid);
     fn pop_lines(ref self: T, nb: u32) -> (Grid, Grid);
     fn fold_lines_up(ref self: T, index: u32) -> Grid;
 }
+
+fn copy_grid(grid: Span<felt252>, mut result: Array<felt252>, index: u32, stop: u32) -> Array<felt252> {
+    if index < stop {
+        result.append(grid.at(index).clone());
+        copy_grid(grid, result, index + 1, stop)
+    } else {
+        result
+    }
+}
+
 
 fn construct_grid(
         mut grid: Array<felt252>, index: u32, last_index: u32, symbol: felt252
@@ -178,13 +190,37 @@ fn max(lhs: u32, rhs: u32) -> u32 {
 // }
 
 impl GridTraitGridImpl of GridTrait<Grid> {
-    fn new(length: u32, width: u32) -> Grid {
+    fn new(length: u32, width: u32, start_symbol: felt252) -> Grid {
         let mut lst: Array<felt252> = ArrayTrait::new();
-        let mut initial_grid = construct_grid(lst, 0, length * width, 'A'.into());
+        let mut initial_grid = construct_grid(lst, 0, length * width, start_symbol);
         Grid {
             length: length,
             width: width,
             grid: initial_grid
+        }
+    }
+
+    fn try_from(data: Span<felt252>, width: u32, length: u32) -> Result<Grid, felt252> {
+        if (data.len() != length * width){
+            Result::Err("Invalid number of cells")
+        } else {
+            let mut arr = ArrayTrait::new();
+            let grid = copy_grid(data, arr, 0, length * width);
+            Result::Ok(Grid {
+                length: length,
+                width: width,
+                grid: grid
+            })
+        } 
+    }
+
+    fn from(data: Span<felt252>, width: u32, length: u32) -> Grid {
+        let mut arr = ArrayTrait::new();
+        let grid = copy_grid(data, arr, 0, length * width);
+        Grid {
+            length: length,
+            width: width,
+            grid: grid
         }
     }
 
@@ -221,7 +257,6 @@ impl GridTraitGridImpl of GridTrait<Grid> {
         })
     }
 
-
     fn fold_lines_up(ref self: Grid, index: u32) -> Grid {
         let (tofold, base):(Grid, Grid) = self.pop_lines(index);
         let new_width: u32 = max(base.width, tofold.width);
@@ -230,7 +265,7 @@ impl GridTraitGridImpl of GridTrait<Grid> {
         Grid {
             length: self.length,
             width: new_width,
-            grid: folded //tofold_reversed //base.grid 
+            grid: folded
         }
     }
 
