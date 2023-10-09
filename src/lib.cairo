@@ -5,8 +5,9 @@ mod tests;
 
 #[cfg(test)]
 mod lib_grid_tests {
-    use core::clone::Clone;
-    use super::grid::{Grid, GridTraitGridImpl};
+    use core::array::ArrayTrait;
+use core::clone::Clone;
+    use super::grid::{Grid, GridTrait, GridTraitGridImpl};
     use test::test_utils::assert_eq;
     use debug::PrintTrait;
 
@@ -219,6 +220,29 @@ mod lib_grid_tests {
         assert_eq(result.get(1_u32, 2_u32), @('HG'.into()) , 'Wrong cell 5 init value');
     }
 
+
+    #[test]
+    #[available_gas(1000000000)]
+    fn success_fold_left_complex_1() {
+        let length: u32 = 2;
+        let width: u32 = 2;
+        let mut arr: Array<felt252> = ArrayTrait::new();
+        arr.append('I'.into());
+        arr.append('GH'.into());
+        arr.append('FC'.into());
+        arr.append('DEBA'.into());
+        let mut grid: Grid = GridTrait::<Grid>::from(arr.span(), width, length);
+        assert_eq(grid.get(0_u32, 0_u32), @('I'.into()) , 'Wrong cell 0 init value');
+        assert_eq(grid.get(1_u32, 0_u32), @('GH'.into()) , 'Wrong cell 1 init value');
+        assert_eq(grid.get(0_u32, 1_u32), @('FC'.into()) , 'Wrong cell 2 init value');
+        assert_eq(grid.get(1_u32, 1_u32), @('DEBA'.into()) , 'Wrong cell 3 init value');
+
+        let mut step_1 = grid.fold_columns_left(1_u32);
+        assert_eq(step_1.get(0_u32, 0_u32), @('IGH'.into()) , 'Wrong cell 0 init value');
+        assert_eq(step_1.get(1_u32, 0_u32), @('CFDEBA'.into()) , 'Wrong cell 1 init value');
+    }
+
+
     #[test]
     #[available_gas(1000000000)]
     fn success_complete_1() {
@@ -239,15 +263,12 @@ mod lib_grid_tests {
         assert_eq(step_2.get(0_u32, 1_u32), @('FC'.into()) , 'Wrong cell 2 init value');
         assert_eq(step_2.get(1_u32, 1_u32), @('DEBA'.into()) , 'Wrong cell 3 init value');
 
-        '3rd fold'.print();
         let mut step_3 = step_2.fold_columns_left(1_u32);
-        step_3.get(1_u32, 0_u32).clone().print();
         assert_eq(step_3.get(0_u32, 0_u32), @('IGH'.into()) , 'Wrong cell 0 init value');
         assert_eq(step_3.get(1_u32, 0_u32), @('CFDEBA'.into()) , 'Wrong cell 1 init value');
 
-        '4th fold'.print();        
         let mut step_4 = step_3.fold_lines_up(1_u32);
-        assert_eq(step_4.get(0_u32, 0_u32), @('GHICFDEBA'.into()) , 'Wrong cell 0 init value');
+        assert_eq(step_4.get(0_u32, 0_u32), @('HGICFDEBA'.into()) , 'Wrong cell 0 init value');
     }
 
 }

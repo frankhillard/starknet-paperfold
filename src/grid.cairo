@@ -33,7 +33,6 @@ fn copy_grid(grid: Span<felt252>, mut result: Array<felt252>, index: u32, stop: 
     }
 }
 
-
 fn construct_grid(
         mut grid: Array<felt252>, index: u32, last_index: u32, symbol: felt252
     ) -> Array<felt252> {
@@ -63,10 +62,8 @@ fn concat_array_rec(mut base: Array<felt252>, mut other: Array<felt252>) {
     }
 }
 
-
-fn reverse_cell_rec(cell: felt252, mut result: felt252) -> felt252 {
-    let cell_256: u256 = cell.into();
-    if (cell_256 > 0_u256){
+fn reverse_cell_rec(cell: u256, mut result: u256) -> u256 {
+    if (cell > 0_u256){
         let rem = cell % 256;
         reverse_cell_rec(cell / 256, result * 256 + rem)
     } else {
@@ -74,21 +71,44 @@ fn reverse_cell_rec(cell: felt252, mut result: felt252) -> felt252 {
     }
 }
 
+
+// fn reverse_cell_rec_felt(cell: felt252, mut result: felt252) -> felt252 {
+//     'reverse_cell_rec'.print();
+//     cell.print();
+//     let cell_256: u256 = cell.into();
+//     cell_256.print();
+//     if (cell_256 > 0_u256){
+//         'before rem'.print();
+//         let temp_rem = cell_256 % 256;
+//         'temp_rem'.print();
+//         temp_rem.print();
+//         let rem = cell % 256;
+//         'rem'.print();
+//         rem.print();
+//         reverse_cell_rec_felt(cell / 256, result * 256 + rem)
+//     } else {
+//         result
+//     }
+// }
+
 fn reverse_cell(cell: felt252) -> felt252 {
     let cell_256: u256 = cell.into();
     if (cell_256 > 256_u256){
-        let reversed = reverse_cell_rec(cell, 0);
-        reversed
+        let reversed = reverse_cell_rec(cell.into(), 0);
+        let result_as_felt: felt252 = reversed.try_into().unwrap();
+        result_as_felt
     } else {
         cell
     }
 }
+
 fn copy_one_line_rev_rec(grid: Span<felt252>, mut result: Array<felt252>, index: u32, end: u32) -> Array<felt252>{
     if (index > end){
         result
     } else {
         let val = grid.get(index).unwrap().unbox();
-        result.append(reverse_cell(val.clone()));
+        let reversed_val = reverse_cell(val.clone()); 
+        result.append(reversed_val);
         copy_one_line_rev_rec(grid, result, index + 1, end)
     }
 }
@@ -152,9 +172,8 @@ fn pow_rec_felt(base:felt252, exp: felt252, res: felt252) -> felt252 {
     }
 }
 
-fn felt_length(data: felt252, cpt: u32) -> u32 {
-    let d: u256 = data.into();
-    if d > 256 {
+fn felt_length(data: u256, cpt: u32) -> u32 {
+    if data > 256 {
         felt_length(data / 256, cpt + 1)
     } else {
         cpt + 1
@@ -162,13 +181,13 @@ fn felt_length(data: felt252, cpt: u32) -> u32 {
 }
 
 fn concat_felt(top: felt252, base: felt252) -> felt252 {
-    let base_size = felt_length(base, 0);
+    let base_size = felt_length(base.into(), 0);
     let offset = pow_rec_felt(256, base_size.into(), 1);
     top * offset.into() + base
 }
 
 fn fold_line_rec(tofold: Span<felt252>, base: Span<felt252>, length: u32, index: u32, mut arr: Array<felt252>) -> Array<felt252> {
-    if (tofold.len() > index && base.len() > index) {
+    if ((tofold.len() > index) && (base.len() > index)) {
         let a:felt252 = tofold.at(index).clone();
         let b:felt252 = base.at(index).clone();
         let d = concat_felt(a, b);
@@ -186,7 +205,6 @@ fn fold_line_rec(tofold: Span<felt252>, base: Span<felt252>, length: u32, index:
         arr
     }
 }
-
 
 fn fold_lines(tofold: Span<felt252>, base: Span<felt252>, length: u32) -> Array<felt252> {
     let mut arr : Array<felt252> = ArrayTrait::new();
@@ -206,8 +224,6 @@ fn copy_column_rec(grid: Span<felt252>, mut column: Array<felt252>, index: u32, 
     if (index > width - 1){
         column
     } else {
-        // let tt = index_line + index * length;
-        // tt.print();
         column.append(grid.at(index_line + index * length).clone());
         copy_column_rec(grid, column, index + 1, index_line, width, length)
     }
@@ -221,9 +237,6 @@ fn transpose(grid: Span<felt252>, mut result: Array<felt252>, index: u32, length
         transpose(grid, col, index + 1, length, width)
     }
 }
-
-
-
 
 fn copy_one_line_rec(grid: Span<felt252>, mut result: Array<felt252>, index: u32, end: u32) -> Array<felt252>{
     if (index > end){
@@ -250,27 +263,6 @@ fn reverse_grid_lines(grid: Span<felt252>, width: u32, length: u32) -> Array<fel
     let res = reverse_grid_lines_rec(grid, arr, index, length);
     res.unwrap()
 }
-
-// fn inverse_grid(grid: Span<felt252>, mut result: Array<felt252>, index: u32, length:u32, width:u32) -> Array<felt252> {
-//     if (index > width - 1){
-//         result
-//     } else {
-        
-//         let col = copy_column_rec(grid, result, 0, index, width, length);
-//         inverse_grid(grid, col, index + 1, length, width)
-//     }
-// }
-
-
-
-// impl TCopyClone<T, impl TCopy: Copy<T>> of Clone<Array<felt252>> {
-//     fn clone(self: @Array<felt252>) -> Array<felt252> {
-//         let mut res: Array<felt252> = ArrayTrait::new();
-//         let temp = self.//..pop_front().unwrap();
-//         res.append(self.pop_front().unwrap().clone());
-//         res
-//     }
-// }
 
 impl GridTraitGridImpl of GridTrait<Grid> {
     fn new(length: u32, width: u32, start_symbol: felt252) -> Grid {
@@ -323,7 +315,6 @@ impl GridTraitGridImpl of GridTrait<Grid> {
             width: self.width - 1,
             grid: rest
         })
-
     }
 
     fn pop_lines(ref self: Grid, nb: u32) -> (Grid, Grid) {
@@ -359,7 +350,6 @@ impl GridTraitGridImpl of GridTrait<Grid> {
             width: self.length,
             grid: transposed
         };
-        // transposed_grid
         let folded_transposed_grid = transposed_grid.fold_lines_up(index);
         let final = transpose(folded_transposed_grid.grid.span(), ArrayTrait::new(), 0, folded_transposed_grid.length, folded_transposed_grid.width);
         Grid {
