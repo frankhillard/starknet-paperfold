@@ -5,8 +5,9 @@ mod tests;
 
 #[cfg(test)]
 mod lib_grid_tests {
-    use core::clone::Clone;
-    use super::grid::{Grid, GridTraitGridImpl};
+    use core::array::ArrayTrait;
+use core::clone::Clone;
+    use super::grid::{Grid, GridTrait, GridTraitGridImpl};
     use test::test_utils::assert_eq;
     use debug::PrintTrait;
 
@@ -37,7 +38,7 @@ mod lib_grid_tests {
 
     #[test]
     #[available_gas(1000000)]
-    fn success_fold_one_line_up() {
+    fn success_fold_up_one_line() {
         let length: u32 = 4;
         let width: u32 = 3;
         let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
@@ -55,7 +56,7 @@ mod lib_grid_tests {
 
     #[test]
     #[available_gas(1000000)]
-    fn success_fold_two_lines() {
+    fn success_fold_up_two_lines() {
         let length: u32 = 4;
         let width: u32 = 3;
         let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
@@ -73,7 +74,7 @@ mod lib_grid_tests {
 
     #[test]
     #[available_gas(10000000)]
-    fn success_fold_two_times_2_1() {
+    fn success_fold_up_two_times_2_1() {
         let length: u32 = 4;
         let width: u32 = 3;
         let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
@@ -88,7 +89,7 @@ mod lib_grid_tests {
 
     #[test]
     #[available_gas(10000000)]
-    fn success_fold_two_times_1_1() {
+    fn success_fold_up_two_times_1_1() {
         let length: u32 = 4;
         let width: u32 = 3;
         let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
@@ -104,7 +105,7 @@ mod lib_grid_tests {
 
     #[test]
     #[available_gas(1000000)]
-    fn success_fold_two_lines_once() {
+    fn success_fold_up_two_lines_once() {
         let length: u32 = 3;
         let width: u32 = 3;
         let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
@@ -120,7 +121,7 @@ mod lib_grid_tests {
 
     #[test]
     #[available_gas(10000000)]
-    fn success_fold_column_1() {
+    fn success_fold_left_column_1() {
         let length: u32 = 4;
         let width: u32 = 3;
         let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
@@ -155,5 +156,119 @@ mod lib_grid_tests {
         // assert_eq(result.get(2_u32, 3_u32), @('L'.into()) , 'Wrong cell 11 init value');
     }
 
+    #[test]
+    #[available_gas(10000000)]
+    fn success_fold_down_two_lines_once() {
+        let length: u32 = 3;
+        let width: u32 = 3;
+        let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
+        let mut result = grid.fold_lines_down(1_u32);
+
+        assert_eq(result.get(0_u32, 0_u32), @('G'.into()) , 'Wrong cell 0 init value');
+        assert_eq(result.get(1_u32, 0_u32), @('H'.into()) , 'Wrong cell 1 init value');
+        assert_eq(result.get(2_u32, 0_u32), @('I'.into()) , 'Wrong cell 2 init value');
+        assert_eq(result.get(0_u32, 1_u32), @('DA'.into()) , 'Wrong cell 3 init value');
+        assert_eq(result.get(1_u32, 1_u32), @('EB'.into()) , 'Wrong cell 4 init value');
+        assert_eq(result.get(2_u32, 1_u32), @('FC'.into()) , 'Wrong cell 5 init value');
+    }
+
+    #[test]
+    #[available_gas(10000000)]
+    fn success_fold_down_one_line_once() {
+        let length: u32 = 3;
+        let width: u32 = 3;
+        let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
+        let mut result = grid.fold_lines_down(2_u32);
+
+        assert_eq(result.get(0_u32, 0_u32), @('A'.into()) , 'Wrong cell 0 init value');
+        assert_eq(result.get(1_u32, 0_u32), @('B'.into()) , 'Wrong cell 1 init value');
+        assert_eq(result.get(2_u32, 0_u32), @('C'.into()) , 'Wrong cell 2 init value');
+        assert_eq(result.get(0_u32, 1_u32), @('GD'.into()) , 'Wrong cell 3 init value');
+        assert_eq(result.get(1_u32, 1_u32), @('HE'.into()) , 'Wrong cell 4 init value');
+        assert_eq(result.get(2_u32, 1_u32), @('IF'.into()) , 'Wrong cell 5 init value');
+    }
+
+    #[test]
+    #[available_gas(10000000)]
+    fn success_fold_right_one_column_once() {
+        let length: u32 = 3;
+        let width: u32 = 3;
+        let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
+        let mut result = grid.fold_columns_right(2_u32);
+
+        assert_eq(result.get(0_u32, 0_u32), @('A'.into()) , 'Wrong cell 0 init value');
+        assert_eq(result.get(1_u32, 0_u32), @('CB'.into()) , 'Wrong cell 1 init value');
+        assert_eq(result.get(0_u32, 1_u32), @('D'.into()) , 'Wrong cell 2 init value');
+        assert_eq(result.get(1_u32, 1_u32), @('FE'.into()) , 'Wrong cell 3 init value');
+        assert_eq(result.get(0_u32, 2_u32), @('G'.into()) , 'Wrong cell 4 init value');
+        assert_eq(result.get(1_u32, 2_u32), @('IH'.into()) , 'Wrong cell 5 init value');
+    }
+
+    #[test]
+    #[available_gas(10000000)]
+    fn success_fold_right_two_columns_once() {
+        let length: u32 = 3;
+        let width: u32 = 3;
+        let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
+        let mut result = grid.fold_columns_right(1_u32);
+
+        assert_eq(result.get(0_u32, 0_u32), @('C'.into()) , 'Wrong cell 0 init value');
+        assert_eq(result.get(1_u32, 0_u32), @('BA'.into()) , 'Wrong cell 1 init value');
+        assert_eq(result.get(0_u32, 1_u32), @('F'.into()) , 'Wrong cell 2 init value');
+        assert_eq(result.get(1_u32, 1_u32), @('ED'.into()) , 'Wrong cell 3 init value');
+        assert_eq(result.get(0_u32, 2_u32), @('I'.into()) , 'Wrong cell 4 init value');
+        assert_eq(result.get(1_u32, 2_u32), @('HG'.into()) , 'Wrong cell 5 init value');
+    }
+
+
+    #[test]
+    #[available_gas(1000000000)]
+    fn success_fold_left_complex_1() {
+        let length: u32 = 2;
+        let width: u32 = 2;
+        let mut arr: Array<felt252> = ArrayTrait::new();
+        arr.append('I'.into());
+        arr.append('GH'.into());
+        arr.append('FC'.into());
+        arr.append('DEBA'.into());
+        let mut grid: Grid = GridTrait::<Grid>::from(arr.span(), width, length);
+        assert_eq(grid.get(0_u32, 0_u32), @('I'.into()) , 'Wrong cell 0 init value');
+        assert_eq(grid.get(1_u32, 0_u32), @('GH'.into()) , 'Wrong cell 1 init value');
+        assert_eq(grid.get(0_u32, 1_u32), @('FC'.into()) , 'Wrong cell 2 init value');
+        assert_eq(grid.get(1_u32, 1_u32), @('DEBA'.into()) , 'Wrong cell 3 init value');
+
+        let mut step_1 = grid.fold_columns_left(1_u32);
+        assert_eq(step_1.get(0_u32, 0_u32), @('IGH'.into()) , 'Wrong cell 0 init value');
+        assert_eq(step_1.get(1_u32, 0_u32), @('CFDEBA'.into()) , 'Wrong cell 1 init value');
+    }
+
+
+    #[test]
+    #[available_gas(1000000000)]
+    fn success_complete_1() {
+        let length: u32 = 3;
+        let width: u32 = 3;
+        let mut grid: Grid = GridTraitGridImpl::new(length, width, 'A'.into());
+        let mut step_1 = grid.fold_columns_right(1_u32);
+        assert_eq(step_1.get(0_u32, 0_u32), @('C'.into()) , 'Wrong cell 0 init value');
+        assert_eq(step_1.get(1_u32, 0_u32), @('BA'.into()) , 'Wrong cell 1 init value');
+        assert_eq(step_1.get(0_u32, 1_u32), @('F'.into()) , 'Wrong cell 2 init value');
+        assert_eq(step_1.get(1_u32, 1_u32), @('ED'.into()) , 'Wrong cell 3 init value');
+        assert_eq(step_1.get(0_u32, 2_u32), @('I'.into()) , 'Wrong cell 4 init value');
+        assert_eq(step_1.get(1_u32, 2_u32), @('HG'.into()) , 'Wrong cell 5 init value');
+
+        let mut step_2 = step_1.fold_lines_down(1_u32);
+        assert_eq(step_2.get(0_u32, 0_u32), @('I'.into()) , 'Wrong cell 0 init value');
+        assert_eq(step_2.get(1_u32, 0_u32), @('GH'.into()) , 'Wrong cell 1 init value');
+        assert_eq(step_2.get(0_u32, 1_u32), @('FC'.into()) , 'Wrong cell 2 init value');
+        assert_eq(step_2.get(1_u32, 1_u32), @('DEBA'.into()) , 'Wrong cell 3 init value');
+
+        let mut step_3 = step_2.fold_columns_left(1_u32);
+        assert_eq(step_3.get(0_u32, 0_u32), @('IGH'.into()) , 'Wrong cell 0 init value');
+        assert_eq(step_3.get(1_u32, 0_u32), @('CFDEBA'.into()) , 'Wrong cell 1 init value');
+
+        let mut step_4 = step_3.fold_lines_up(1_u32);
+        assert_eq(step_4.get(0_u32, 0_u32), @('HGICFDEBA'.into()) , 'Wrong cell 0 init value');
+    }
 
 }
