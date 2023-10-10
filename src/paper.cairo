@@ -62,9 +62,24 @@ use core::result::ResultTrait;
                     let new_l: u8 = new_grid.length.try_into().unwrap();
                     self.write_grid_to_storage(new_grid.grid.span(), 0_u8, new_l * new_w);
                 },
-                super::Direction::Down(_) => {},
-                super::Direction::Left(_) => {},
-                super::Direction::Right(_) => {},
+                super::Direction::Down(_) => {
+                    let new_grid = grid.fold_lines_down(index.into());
+                    let new_w: u8 = new_grid.width.try_into().unwrap();
+                    let new_l: u8 = new_grid.length.try_into().unwrap();
+                    self.write_grid_to_storage(new_grid.grid.span(), 0_u8, new_l * new_w);
+                },
+                super::Direction::Left(_) => {
+                    let new_grid = grid.fold_columns_left(index.into());
+                    let new_w: u8 = new_grid.width.try_into().unwrap();
+                    let new_l: u8 = new_grid.length.try_into().unwrap();
+                    self.write_grid_to_storage(new_grid.grid.span(), 0_u8, new_l * new_w);
+                },
+                super::Direction::Right(_) => {
+                    let new_grid = grid.fold_columns_right(index.into());
+                    let new_w: u8 = new_grid.width.try_into().unwrap();
+                    let new_l: u8 = new_grid.length.try_into().unwrap();
+                    self.write_grid_to_storage(new_grid.grid.span(), 0_u8, new_l * new_w);
+                },
             }
 
             // WHY RESULT IS NOT ALLOWED ??
