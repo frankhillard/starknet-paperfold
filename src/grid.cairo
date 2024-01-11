@@ -277,7 +277,7 @@ impl GridTraitGridImpl of GridTrait<Grid> {
 
     fn try_from(data: Span<felt252>, width: u32, length: u32) -> Result<Grid, felt252> {
         if (data.len() != length * width){
-            Result::Err("Invalid number of cells")
+            Result::Err('Invalid number of cells')
         } else {
             let mut arr = ArrayTrait::new();
             let grid = copy_grid(data, arr, 0, length * width);
