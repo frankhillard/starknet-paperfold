@@ -1,7 +1,6 @@
 # starknet-paperfold
 
-
-This repository is a Starknet smart contract that emulates the folding of a paper. The goal of this repository is to test the grid (Vec<Vec<String>>) manipulation with cairo.
+This repository is a Starknet smart contract that emulates the folding of a paper. The goal of this repository is to test/practice the grid (Vec<Vec<String>>) manipulation with cairo.
 
 This repository contains 
 - the source code of the smart contract
@@ -19,7 +18,7 @@ One can fold vertically one or more columns by folding the left part onto the ri
 
 One can fold vertically one or more columns by folding the right part onto the left part (we will call this a right folding).
 
-The picture below describes these four folding.
+The picture below describes these possible foldings.
 ![image](./pic.png "folding example")
 
 
